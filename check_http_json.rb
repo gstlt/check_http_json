@@ -30,13 +30,8 @@ require 'optparse'
 require 'timeout'
 
 
-
 # Herp derp.
 options = {}
-
-
-
-# Def jam.
 
 # Display verbose output (if being run by a human for example).
 def say (v, msg)
@@ -93,7 +88,7 @@ def nutty_parse(thresh, want, got, v, element)
     # got < want
     if want =~ /^(\d+):$/ then
         if got.to_i < $1.to_i then
-            retval = '%s is below threshold value %s (%s)' % [element, $1, got]
+            retval = '%s is below threshold value %s (%s) | %s=%s' % [element, $1, got, element, got]
         else
             retval = 'OK'
         end
@@ -102,7 +97,7 @@ def nutty_parse(thresh, want, got, v, element)
     # got > want
     if want =~ /^~:(\d+)$/ then
         if got.to_i > $1.to_i then
-            retval = '%s is above threshold value %s (%s)' % [element, $1, got]
+            retval = '%s is above threshold value %s (%s) | %s=%s' % [element, $1, got, element, got]
         else
             retval = 'OK'
         end
@@ -111,7 +106,7 @@ def nutty_parse(thresh, want, got, v, element)
     # outside specific range
     if want =~ /^(\d+):(\d+)$/ then
         if got.to_i < $1.to_i or got.to_i > $2.to_i then
-            retval = '%s is outside expected range [%s:%s] (%s)' % [element, $1, $2, got] 
+            retval = '%s is outside expected range [%s:%s] (%s) | %s=%s' % [element, $1, $2, got, element, got] 
         else
             retval = 'OK'
         end
@@ -120,7 +115,7 @@ def nutty_parse(thresh, want, got, v, element)
     # inside specific range
     if want =~ /^@(\d+):(\d+)$/ then
         if got.to_i >= $1.to_i and got.to_i <= $2.to_i then
-            retval = '%s is in  value range [%s:%s] (%s)' % [element, $1, $2, got]
+            retval = '%s is in value range [%s:%s] (%s) | %s=%s' % [element, $1, $2, got, element, got]
         else
             retval = 'OK'
         end
@@ -129,7 +124,7 @@ def nutty_parse(thresh, want, got, v, element)
     # otherwise general range
     if not want =~ /\D/ then
         if got.to_i > want.to_i then
-            retval = '%s is above threshold value %s (%s)' % [element, want, got]
+            retval = '%s is above threshold value %s (%s) | %s=%s' % [element, want, got, element, got]
         elsif got.to_i < 0  then
             retval = '%s is below 0 (%s)' % [element, got]
         else
@@ -426,7 +421,7 @@ if options[:perf].is_a?(Array) then
         end
     end
     # Build a nice output string (issue #17).
-    perf = ' | ' + p.join(' ')
+    perf = ' ' + p.join(' ')
 end
 
 # If the element is a string...
@@ -458,10 +453,10 @@ say(options[:v], 'The value of %s is %s' % [options[:element], json_flat[options
 # If we're looking for a string...
 if options[:result_string] then
     if json_flat[options[:element]].to_s == options[:result_string].to_s then
-        msg = '%s is %s' % [options[:element], json_flat[options[:element]]] + perf
+        msg = '%s is %s | %s=%s' % [options[:element], json_flat[options[:element]], options[:element], json_flat[options[:element]]] + perf
         do_exit(options[:v], 0, msg)
     else
-        msg = '%s is %s' % [options[:element], json_flat[options[:element]]] + perf
+        msg = '%s is %s | %s=%s' % [options[:element], json_flat[options[:element]], options[:element], json_flat[options[:element]]] + perf
         do_exit(options[:v], 2, msg)
     end
 end
@@ -470,10 +465,10 @@ end
 if options[:result_regex] then
     say(options[:v], 'Will match %s against \'%s\'' % [options[:element].to_s, options[:result_regex]])
     if json_flat[options[:element]].to_s =~ Regexp.new(options[:result_regex]) then
-        msg = '%s is %s' % [options[:element], json_flat[options[:element]]] + perf
+        msg = '%s is %s | %s=%s' % [options[:element], json_flat[options[:element]], options[:element], json_flat[options[:element]]] + perf
         do_exit(options[:v], 0, msg)
     else
-        msg = '%s is %s' % [options[:element], json_flat[options[:element]]] + perf
+        msg = '%s is %s | %s=%s' % [options[:element], json_flat[options[:element]], options[:element], json_flat[options[:element]]] + perf
         do_exit(options[:v], 2, msg)
     end
 end
@@ -532,7 +527,7 @@ elsif warn != 'OK' then
     msg = '%s' % [warn] + perf
     exit_code = 1
 else
-    msg = '%s is %s' % [options[:element], json_flat[options[:element]]] + perf
+    msg = '%s is %s | %s=%s' % [options[:element], json_flat[options[:element]], options[:element], json_flat[options[:element]]] + perf
     exit_code = 0
 end
 
